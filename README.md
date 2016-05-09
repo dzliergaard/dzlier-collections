@@ -39,13 +39,11 @@ quicker way of writing list.stream().filter(matcher).findFirst().
 WeightedTrie is a Trie implementation which allows you to quickly add chains of elements down the trie, 
 combining equal elements and their weights as it does so. For example:
 
-<code>
+<pre>
 trie.addChain(1.0, new String[] { "A", "B", "C" });
-
 trie.addChain(2.0, new String[] { "A", "D", "C" });
-
 trie.addChain(3.0, new String[] { "A", "D" });
-</code>
+</pre>
 
 In this example, the top level of the Trie will contain a single element, "A", which has a weight of 6 (1 + 2 + 3).
 "A" will have two children, "B" with a weight of 1, and "D" with a weight of 5 (2 + 3). "B"s single child "C" will 
