@@ -41,7 +41,9 @@ combining equal elements and their weights as it does so. For example:
 
 <code>
 trie.addChain(1.0, new String[] { "A", "B", "C" });
+
 trie.addChain(2.0, new String[] { "A", "D", "C" });
+
 trie.addChain(3.0, new String[] { "A", "D" });
 </code>
 
