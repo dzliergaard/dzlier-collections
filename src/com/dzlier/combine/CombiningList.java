@@ -18,9 +18,13 @@
 package com.dzlier.combine;
 
 import java.util.AbstractList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lombok.NonNull;
 
@@ -81,5 +85,30 @@ public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
     @Override
     public boolean add(E element) {
         return add(element, e -> false) > 0;
+    }
+
+    @Override
+    public void forEach(Consumer<? super E> action) {
+        backingList.forEach(action);
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return backingList.iterator();
+    }
+
+    @Override
+    public ListIterator<E> listIterator() {
+        return backingList.listIterator();
+    }
+
+    @Override
+    public Stream<E> parallelStream() {
+        return backingList.parallelStream();
+    }
+
+    @Override
+    public Stream<E> stream() {
+        return backingList.stream();
     }
 }

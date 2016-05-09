@@ -50,9 +50,9 @@ public class WeightedTrieTest {
 
     @Test
     public void testAddChain() {
-        assertEquals(ONE, trie.addChain(1.0, new String[] { A, B, C }));
-        assertEquals(TWO, trie.addChain(2.0, new String[] { A, D, C }));
-        assertEquals(FIVE, trie.addChain(3.0, new String[] { A, D }));
+        assertEquals(ONE, trie.addChain(ONE, new String[] { A, B, C }));
+        assertEquals(TWO, trie.addChain(TWO, new String[] { A, D, C }));
+        assertEquals(FIVE, trie.addChain(THREE, new String[] { A, D }));
         assertEquals(A, trie.root.children.get(0).item);
         assertEquals(SIX, trie.root.children.getWeight(node -> node.matchesItem(A)));
         assertEquals(B, trie.root.children.get(0).children.get(0).item);

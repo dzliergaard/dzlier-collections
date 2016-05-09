@@ -20,11 +20,15 @@ package com.dzlier.weight;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.collections.transformation.SortedList;
 
@@ -146,6 +150,31 @@ public class WeightedList<E> extends AbstractList<E> {
             result.add(sorted.get(i).element);
         }
         return result;
+    }
+
+    @Override
+    public void forEach(Consumer<? super E> action) {
+        backingList.forEach(n -> action.accept(n.element));
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return backingList.stream().map(n -> n.element).iterator();
+    }
+
+    @Override
+    public ListIterator<E> listIterator() {
+        return backingList.stream().map(n -> n.element).collect(Collectors.toList()).listIterator();
+    }
+
+    @Override
+    public Stream<E> parallelStream() {
+        return backingList.stream().map(n -> n.element).collect(Collectors.toList()).parallelStream();
+    }
+
+    @Override
+    public Stream<E> stream() {
+        return backingList.stream().map(n -> n.element).collect(Collectors.toList()).stream();
     }
 
     @AllArgsConstructor
