@@ -33,8 +33,12 @@ public class CombiningWeightedList<E> extends WeightedList<E> {
     }
 
     /**
-     * Adds the non-null element {@param element} with the weight of {@param weight}
-     * 
+     * Adds the non-null element element with the weight of weight
+     *
+     * @param weight
+     *            weight to initialize element with, or add to existing element to be combined
+     * @param element
+     *            element to add or combine with pre-existing elements
      * @return adjusted weight of the element that was added/modified
      */
     @Override
@@ -50,9 +54,16 @@ public class CombiningWeightedList<E> extends WeightedList<E> {
     }
 
     /**
-     * Adds the non-null element {@param element} with the weight of {@param weight}. If an element of the list
-     * matches {@param matcher}, then {@param element} is combined with it instead.
      *
+     * Adds the non-null element element with the weight of weight. If an element of the list
+     * matches matcher, then element is combined with it instead.
+     *
+     * @param weight
+     *            weight to initialize element with, or add to existing element to be combined
+     * @param element
+     *            element to add or combine with pre-existing elements
+     * @param matcher
+     *            {@link Predicate} to match existing elements to know which to combine with element
      * @return adjusted weight of the element that was added/modified
      */
     public Double add(Double weight, @NonNull E element, @NonNull Predicate<E> matcher) {

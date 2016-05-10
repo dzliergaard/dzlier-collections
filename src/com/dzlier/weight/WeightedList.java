@@ -56,9 +56,11 @@ public class WeightedList<E> extends AbstractList<E> {
     }
 
     /**
-     * Adds the non-null element {@param element} with a weight of 1. {@code add(double, E)} is recommended over this,
+     * Adds the non-null element element with a weight of 1. {@code add(double, E)} is recommended over this,
      * to ensure specific weights for each element.
-     * 
+     *
+     * @param element
+     *            element to add to list
      * @return whether list was modified.
      */
     @Override
@@ -67,8 +69,12 @@ public class WeightedList<E> extends AbstractList<E> {
     }
 
     /**
-     * Adds the non-null element {@param element} with the weight of {@param weight}
-     * 
+     * Adds non-null element with a given weight
+     *
+     * @param weight
+     *            weight for new element
+     * @param element
+     *            element to add to list
      * @return weight of added element
      */
     public Double add(Double weight, @NonNull E element) {
@@ -92,14 +98,22 @@ public class WeightedList<E> extends AbstractList<E> {
     }
 
     /**
-     * @return the weight of {@param item}, if it appears in the list
+     * Gets the weight of a given item in the list
+     * 
+     * @param item
+     *            item to get the weight for
+     * @return the weight of item, if it appears in the list
      */
     public Double getWeight(E item) {
         return backingList.stream().filter(n -> n.itemEquals(item)).findFirst().map(Node::getWeight).orElse(-1.0);
     }
 
     /**
-     * @return the weight of first item that matches {@param matcher}, if it appears in the list
+     * Gets the weight of the first item in the list that matches matcher
+     *
+     * @param matcher
+     *            matcher to find the item to get the weight of
+     * @return the weight of first item that matches matcher, if it appears in the list
      */
     public Double getWeight(Predicate<E> matcher) {
         return backingList.stream().filter(n -> matcher.test(n.element)).findFirst().map(Node::getWeight).orElse(-1.0);
@@ -124,18 +138,23 @@ public class WeightedList<E> extends AbstractList<E> {
     }
 
     /**
-     * finds the first element of backingList that matches {@param matcher}
+     * finds the first element of backingList that matches matcher
      * 
-     * @return first match in backingList to {@param matcher}
+     *
+     * @param matcher
+     *            matcher to find the item to get the weight of
+     * @return first match in backingList to matcher
      */
     public Optional<E> findFirst(Predicate<E> matcher) {
         return backingList.sorted().stream().map(n -> n.element).filter(matcher).findFirst();
     }
 
     /**
-     * Return the {@param num} heaviest entries
-     * 
-     * @return {@param num} first entries based on element weight
+     * Return the num heaviest entries
+     *
+     * @param num
+     *            number of top entries to return
+     * @return num first entries based on element weight
      */
     public List<E> top(int num) {
         if (num < 1) {

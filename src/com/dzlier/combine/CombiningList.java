@@ -32,6 +32,7 @@ import lombok.NonNull;
  * Implementation of {@link List} that checks whether an element
  * 
  * @param <E>
+ *            Elements of the list
  */
 public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
     private final List<E> backingList;
@@ -56,9 +57,13 @@ public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
     }
 
     /**
-     * If list contains any elements that match {@param matcher}, combine {@param element} with each of those elements
+     * If list contains any elements that match matcher, combine element with each of those elements
      * Otherwise add as normal
-     * 
+     *
+     * @param element
+     *            element to add/combine
+     * @param matcher
+     *            matcher to determine if existing elements should be combined with new one
      * @return number of elements that were modified (1 if added)
      */
     public int add(E element, Predicate<E> matcher) {
@@ -77,9 +82,11 @@ public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
     }
 
     /**
-     * Adds a {@param element} to backing list without performing any combination.
+     * Adds a element to backing list without performing any combination.
      * Advised to use {@code add(E, Predicate<E>)} instead.
-     * 
+     *
+     * @param element
+     *            element to add to list
      * @return whether list was modified.
      */
     @Override

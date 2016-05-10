@@ -22,7 +22,10 @@ package com.dzlier.combine;
  */
 public interface Combine<T> extends Comparable<T> {
     /**
-     * Combines {@param other} into this
+     * Combines other into this
+     * 
+     * @param other
+     *            element to combine into this one
      * 
      * @return whether this item was modified
      */

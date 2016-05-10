@@ -31,12 +31,16 @@ import java.util.TreeMap;
  */
 public class CombiningMap<K, V extends Combine<V>> extends TreeMap<K, V> {
     /**
-     * If tree already contains a value for key {@param k}, it combines the existing value with value {@param v}
-     * 
-     * By definition, this method does not return the previous value for key {@param k} since it does not remove values,
-     * so it returns the current element for key {@param k} instead.
-     * 
-     * @return current element for item {@param k}
+     * If tree already contains a value for key k, it combines the existing value with value v
+     *
+     * By definition, this method does not return the previous value for key k since it does not remove values,
+     * so it returns the current element for key k instead.
+     *
+     * @param k
+     *            key
+     * @param v
+     *            value, implements {@link Combine} so it can be combined if necessary
+     * @return current element for item k
      */
     @Override
     public V put(K k, V v) {

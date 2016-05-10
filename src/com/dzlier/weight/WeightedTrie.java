@@ -39,9 +39,14 @@ public class WeightedTrie<T> {
     }
 
     /**
-     * Adds the {@param chain} of non-null T elements down through the trie. If a part of the chain already exists, it
-     * increases that part's weight by {@param weight}
-     * 
+     * Adds the chain of non-null T elements down through the trie. If a part of the chain already exists, it increases
+     * that part's weight by weight
+     *
+     * @param weight
+     *            weight to add to each element of chain
+     * @param chain
+     *            chain of elements to add from the root down. Each item in the chain is added as a child of the
+     *            previous element.
      * @return new weight of last element of the added chain
      */
     public Double addChain(Double weight, T[] chain) {
@@ -49,7 +54,12 @@ public class WeightedTrie<T> {
     }
 
     /**
-     * @return Random child of last element in {@param groups}, or {@param defaultValue} if chain does not exist
+     * 
+     * @param defaultValue
+     *            default value to return if the chain does not exist
+     * @param groups
+     *            in-order ancestors of the level from which we want a random child
+     * @return Random child of last element in groups, or defaultValue if chain does not exist
      */
     @SafeVarargs
     public final T random(T defaultValue, T... groups) {
@@ -57,8 +67,12 @@ public class WeightedTrie<T> {
     }
 
     /**
-     * @return Top {@param num} children of last node of {@param groups}
-     *         or empty list if chain {@param groups} does not exist in trie
+     * @return Top num children of last node of groups or empty list if chain groups does not exist in trie
+     * @param num
+     *            number of top items to get from the resultant list
+     * @param groups
+     *            in-order ancestors of the level from which we want the top num children
+     * @return
      */
     @SafeVarargs
     public final List<T> top(Integer num, T... groups) {
