@@ -110,9 +110,6 @@ public class WeightedTrie<T> {
         }
 
         Optional<TrieNode> get(T[] groups) {
-            if (groups == null || groups.length == 0) {
-                return Optional.empty();
-            }
             Optional<TrieNode> node = Optional.of(this);
             for (T group : groups) {
                 node = node
