@@ -18,121 +18,119 @@
 
 package com.dzlier.weight;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * Implementation of Trie with weighted children to choose from
  */
 public class WeightedTrie<T> {
-    @VisibleForTesting TrieNode root;
 
-    public WeightedTrie() {
-        this.root = new TrieNode(null);
-    }
+  @VisibleForTesting
+  TrieNode root;
 
-    /**
-     * Adds the chain of non-null T elements down through the trie. If a part of the chain already exists, it increases
-     * that part's weight by weight
-     *
-     * @param weight
-     *            weight to add to each element of chain
-     * @param chain
-     *            chain of elements to add from the root down. Each item in the chain is added as a child of the
-     *            previous element.
-     * @return new weight of last element of the added chain
-     */
-    public Double addChain(Double weight, T[] chain) {
-        return root.addChain(weight, chain);
-    }
+  public WeightedTrie() {
+    this.root = new TrieNode(null);
+  }
 
-    /**
-     * 
-     * @param defaultValue
-     *            default value to return if the chain does not exist
-     * @param groups
-     *            in-order ancestors of the level from which we want a random child
-     * @return Random child of last element in groups, or defaultValue if chain does not exist
-     */
-    @SafeVarargs
-    public final T random(T defaultValue, T... groups) {
-        return root.random(groups).orElse(defaultValue);
-    }
+  /**
+   * Adds the chain of non-null T elements down through the trie. If a part of the chain already
+   * exists, it increases that part's weight by weight
+   *
+   * @param weight weight to add to each element of chain
+   * @param chain chain of elements to add from the root down. Each item in the chain is added as a
+   * child of the previous element.
+   * @return new weight of last element of the added chain
+   */
+  public Double addChain(Double weight, T[] chain) {
+    return root.addChain(weight, chain);
+  }
 
-    /**
-     * @return Top num children of last node of groups or empty list if chain groups does not exist in trie
-     * @param num
-     *            number of top items to get from the resultant list
-     * @param groups
-     *            in-order ancestors of the level from which we want the top num children
-     * @return
-     */
-    @SafeVarargs
-    public final List<T> top(Integer num, T... groups) {
-        List<TrieNode> list = root
-            .get(groups)
-            .map(TrieNode::getChildren)
-            .map(children -> children.top(num))
-            .orElse(new ArrayList<>());
-        return list.stream().map(n -> n.item).collect(Collectors.toList());
-    }
+  /**
+   * @param defaultValue default value to return if the chain does not exist
+   * @param groups in-order ancestors of the level from which we want a random child
+   * @return Random child of last element in groups, or defaultValue if chain does not exist
+   */
+  @SafeVarargs
+  public final T random(T defaultValue, T... groups) {
+    return root.random(groups).orElse(defaultValue);
+  }
+
+  /**
+   * @param num number of top items to get from the resultant list
+   * @param groups in-order ancestors of the level from which we want the top num children
+   */
+  @SafeVarargs
+  public final List<T> top(Integer num, T... groups) {
+    List<TrieNode> list = root
+        .get(groups)
+        .map(TrieNode::getChildren)
+        .map(children -> children.top(num))
+        .orElse(new ArrayList<>());
+    return list.stream().map(n -> n.item).collect(Collectors.toList());
+  }
+
+  @VisibleForTesting
+  class TrieNode {
 
     @VisibleForTesting
-    class TrieNode {
-        @VisibleForTesting T item;
-        @VisibleForTesting @Getter(AccessLevel.PRIVATE) CombiningWeightedList<TrieNode> children;
+    T item;
+    @VisibleForTesting
+    @Getter(AccessLevel.PRIVATE)
+    CombiningWeightedList<TrieNode> children;
 
-        TrieNode(T item) {
-            this.item = item;
-            this.children = new CombiningWeightedList<>();
-        }
-
-        Double addChain(Double weight, T[] groups) {
-            TrieNode node = this;
-            Double newWeight = 0.0;
-            for (T group : groups) {
-                if (group == null) {
-                    return newWeight;
-                }
-
-                newWeight = node.children.add(weight, new TrieNode(group), n -> n.matchesItem(group));
-                Optional<TrieNode> child = node.children.findFirst(n -> n.matchesItem(group));
-                node = child.orElseThrow(() -> new IllegalStateException("List does not contain newly added element"));
-            }
-            return newWeight;
-        }
-
-        Optional<TrieNode> get(T[] groups) {
-            Optional<TrieNode> node = Optional.of(this);
-            for (T group : groups) {
-                node = node
-                    .map(TrieNode::getChildren)
-                    .map(children -> children.findFirst(t -> t.matchesItem(group)))
-                    .orElse(Optional.empty());
-            }
-            return node;
-        }
-
-        T random() {
-            if (this.children.isEmpty()) {
-                return null;
-            }
-            return this.children.random().item;
-        }
-
-        Optional<T> random(T[] groups) {
-            return get(groups).map(TrieNode::random);
-        }
-
-        boolean matchesItem(T that) {
-            return that != null && this.item.equals(that);
-        }
+    TrieNode(T item) {
+      this.item = item;
+      this.children = new CombiningWeightedList<>();
     }
+
+    Double addChain(Double weight, T[] groups) {
+      TrieNode node = this;
+      Double newWeight = 0.0;
+      for (T group : groups) {
+        if (group == null) {
+          return newWeight;
+        }
+
+        newWeight = node.children.add(weight, new TrieNode(group), n -> n.matchesItem(group));
+        Optional<TrieNode> child = node.children.findFirst(n -> n.matchesItem(group));
+        node = child.orElseThrow(
+            () -> new IllegalStateException("List does not contain newly added element"));
+      }
+      return newWeight;
+    }
+
+    Optional<TrieNode> get(T[] groups) {
+      Optional<TrieNode> node = Optional.of(this);
+      for (T group : groups) {
+        node = node
+            .map(TrieNode::getChildren)
+            .map(children -> children.findFirst(t -> t.matchesItem(group)))
+            .orElse(Optional.empty());
+      }
+      return node;
+    }
+
+    T random() {
+      if (this.children.isEmpty()) {
+        return null;
+      }
+      return this.children.random().item;
+    }
+
+    Optional<T> random(T[] groups) {
+      return get(groups).map(TrieNode::random);
+    }
+
+    boolean matchesItem(T that) {
+      return that != null && this.item.equals(that);
+    }
+  }
 }

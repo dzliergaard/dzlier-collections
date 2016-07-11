@@ -22,28 +22,29 @@ package com.dzlier.combine;
  * Test class that implements {@link Combine} interface
  */
 class Combinable implements Combine<Combinable> {
-    final int id;
-    // number of other elements that have been combined into this one
-    int combined = 0;
-    // last element to be combined into this one
-    Combinable lastCombined;
-    // if this element has been combined into another element
-    boolean hasBeenCombined = false;
 
-    Combinable(int id) {
-        this.id = id;
-    }
+  final int id;
+  // number of other elements that have been combined into this one
+  int combined = 0;
+  // last element to be combined into this one
+  Combinable lastCombined;
+  // if this element has been combined into another element
+  boolean hasBeenCombined = false;
 
-    @Override
-    public boolean combine(Combinable other) {
-        combined += 1;
-        lastCombined = other;
-        other.hasBeenCombined = true;
-        return true;
-    }
+  Combinable(int id) {
+    this.id = id;
+  }
 
-    @Override
-    public int compareTo(Combinable o) {
-        return 0;
-    }
+  @Override
+  public boolean combine(Combinable other) {
+    combined += 1;
+    lastCombined = other;
+    other.hasBeenCombined = true;
+    return true;
+  }
+
+  @Override
+  public int compareTo(Combinable o) {
+    return 0;
+  }
 }

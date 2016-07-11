@@ -21,71 +21,74 @@ package com.dzlier.weight;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Unit tests for {@link WeightedTrie}
  */
 public class WeightedTrieTest {
-    private static final Double ONE = 1.0;
-    private static final Double TWO = 2.0;
-    private static final Double THREE = 3.0;
-    private static final Double FIVE = 5.0;
-    private static final Double SIX = 6.0;
-    private static final String A = "A";
-    private static final String B = "B";
-    private static final String C = "C";
-    private static final String D = "D";
-    public static final String E = "E";
 
-    private WeightedTrie<String> trie;
+  private static final Double ONE = 1.0;
+  private static final Double TWO = 2.0;
+  private static final Double THREE = 3.0;
+  private static final Double FIVE = 5.0;
+  private static final Double SIX = 6.0;
+  private static final String A = "A";
+  private static final String B = "B";
+  private static final String C = "C";
+  private static final String D = "D";
+  public static final String E = "E";
 
-    @Before
-    public void setup() {
-        trie = new WeightedTrie<>();
-    }
+  private WeightedTrie<String> trie;
 
-    @Test
-    public void testAddChain() {
-        assertEquals(ONE, trie.addChain(ONE, new String[] { A, B, C }));
-        assertEquals(TWO, trie.addChain(TWO, new String[] { A, D, C }));
-        assertEquals(FIVE, trie.addChain(THREE, new String[] { A, D }));
-        assertEquals(A, trie.root.children.get(0).item);
-        assertEquals(SIX, trie.root.children.getWeight(node -> node.matchesItem(A)));
-        assertEquals(B, trie.root.children.get(0).children.get(0).item);
-        assertEquals(ONE, trie.root.children.get(0).children.getWeight(node -> node.matchesItem(B)));
-        assertEquals(C, trie.root.children.get(0).children.get(0).children.get(0).item);
-        assertEquals(ONE, trie.root.children.get(0).children.get(0).children.getWeight(node -> node.matchesItem(C)));
+  @Before
+  public void setup() {
+    trie = new WeightedTrie<>();
+  }
 
-        assertEquals(D, trie.root.children.get(0).children.get(1).item);
-        assertEquals(FIVE, trie.root.children.get(0).children.getWeight(node -> node.matchesItem(D)));
-        assertEquals(C, trie.root.children.get(0).children.get(1).children.get(0).item);
-        assertEquals(TWO, trie.root.children.get(0).children.get(1).children.getWeight(node -> node.matchesItem(C)));
-    }
+  @Test
+  public void testAddChain() {
+    assertEquals(ONE, trie.addChain(ONE, new String[]{A, B, C}));
+    assertEquals(TWO, trie.addChain(TWO, new String[]{A, D, C}));
+    assertEquals(FIVE, trie.addChain(THREE, new String[]{A, D}));
+    assertEquals(A, trie.root.children.get(0).item);
+    assertEquals(SIX, trie.root.children.getWeight(node -> node.matchesItem(A)));
+    assertEquals(B, trie.root.children.get(0).children.get(0).item);
+    assertEquals(ONE, trie.root.children.get(0).children.getWeight(node -> node.matchesItem(B)));
+    assertEquals(C, trie.root.children.get(0).children.get(0).children.get(0).item);
+    assertEquals(ONE,
+        trie.root.children.get(0).children.get(0).children.getWeight(node -> node.matchesItem(C)));
 
-    @Test
-    public void testTop() {
-        assertEquals(ONE, trie.addChain(ONE, new String[] { A, B, C, D }));
-        assertEquals(TWO, trie.addChain(TWO, new String[] { A, D, C }));
-        assertEquals(FIVE, trie.addChain(THREE, new String[] { A, D }));
-        List<String> levelTwo = trie.top(3, A);
-        assertEquals(2, levelTwo.size());
-        assertEquals(D, levelTwo.get(0));
-        assertEquals(B, levelTwo.get(1));
-    }
+    assertEquals(D, trie.root.children.get(0).children.get(1).item);
+    assertEquals(FIVE, trie.root.children.get(0).children.getWeight(node -> node.matchesItem(D)));
+    assertEquals(C, trie.root.children.get(0).children.get(1).children.get(0).item);
+    assertEquals(TWO,
+        trie.root.children.get(0).children.get(1).children.getWeight(node -> node.matchesItem(C)));
+  }
 
-    @Test
-    public void testRandom() {
-        assertEquals(ONE, trie.addChain(ONE, new String[] { A, B, C, D }));
-        assertEquals(TWO, trie.addChain(TWO, new String[] { A, D, C }));
-        assertEquals(FIVE, trie.addChain(THREE, new String[] { A, D }));
-        assertTrue(trie.random(E, A).matches("B|D"));
-        assertEquals(C, trie.random(E, A, B));
-        assertEquals(D, trie.random(E, A, B, C));
-        assertEquals(E, trie.random(E, A, B, D));
-        assertEquals(E, trie.random(E, D, A, B));
-    }
+  @Test
+  public void testTop() {
+    assertEquals(ONE, trie.addChain(ONE, new String[]{A, B, C, D}));
+    assertEquals(TWO, trie.addChain(TWO, new String[]{A, D, C}));
+    assertEquals(FIVE, trie.addChain(THREE, new String[]{A, D}));
+    List<String> levelTwo = trie.top(3, A);
+    assertEquals(2, levelTwo.size());
+    assertEquals(D, levelTwo.get(0));
+    assertEquals(B, levelTwo.get(1));
+  }
+
+  @Test
+  public void testRandom() {
+    assertEquals(ONE, trie.addChain(ONE, new String[]{A, B, C, D}));
+    assertEquals(TWO, trie.addChain(TWO, new String[]{A, D, C}));
+    assertEquals(FIVE, trie.addChain(THREE, new String[]{A, D}));
+    assertTrue(trie.random(E, A).matches("B|D"));
+    assertEquals(C, trie.random(E, A, B));
+    assertEquals(D, trie.random(E, A, B, C));
+    assertEquals(E, trie.random(E, A, B, D));
+    assertEquals(E, trie.random(E, D, A, B));
+  }
 }

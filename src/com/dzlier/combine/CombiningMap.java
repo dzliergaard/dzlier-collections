@@ -22,34 +22,32 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 /**
- * Implementation of a Navigable {@link TreeMap} that combines values associated with keys instead of replacing them
- * 
- * @param <K>
- *            Key element
- * @param <V>
- *            Value element
+ * Implementation of a Navigable {@link TreeMap} that combines values associated with keys instead
+ * of replacing them
+ *
+ * @param <K> Key element
+ * @param <V> Value element
  */
 public class CombiningMap<K, V extends Combine<V>> extends TreeMap<K, V> {
-    /**
-     * If tree already contains a value for key k, it combines the existing value with value v
-     *
-     * By definition, this method does not return the previous value for key k since it does not remove values,
-     * so it returns the current element for key k instead.
-     *
-     * @param k
-     *            key
-     * @param v
-     *            value, implements {@link Combine} so it can be combined if necessary
-     * @return current element for item k
-     */
-    @Override
-    public V put(K k, V v) {
-        return Optional.ofNullable(this.get(k)).map(val -> {
-            val.combine(v);
-            return val;
-        }).orElseGet(() -> {
-            super.put(k, v);
-            return v;
-        });
-    }
+
+  /**
+   * If tree already contains a value for key k, it combines the existing value with value v
+   *
+   * By definition, this method does not return the previous value for key k since it does not
+   * remove values, so it returns the current element for key k instead.
+   *
+   * @param k key
+   * @param v value, implements {@link Combine} so it can be combined if necessary
+   * @return current element for item k
+   */
+  @Override
+  public V put(K k, V v) {
+    return Optional.ofNullable(this.get(k)).map(val -> {
+      val.combine(v);
+      return val;
+    }).orElseGet(() -> {
+      super.put(k, v);
+      return v;
+    });
+  }
 }

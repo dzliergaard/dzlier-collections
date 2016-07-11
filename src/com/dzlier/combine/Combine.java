@@ -18,16 +18,16 @@
 package com.dzlier.combine;
 
 /**
- * Interface that indicates an element of the class can be combined with another element of the class
+ * Interface that indicates an element of the class can be combined with another element of the
+ * class
  */
 public interface Combine<T> extends Comparable<T> {
-    /**
-     * Combines other into this
-     * 
-     * @param other
-     *            element to combine into this one
-     * 
-     * @return whether this item was modified
-     */
-    boolean combine(T other);
+
+  /**
+   * Combines other into this
+   *
+   * @param other element to combine into this one
+   * @return whether this item was modified
+   */
+  boolean combine(T other);
 }

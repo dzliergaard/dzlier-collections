@@ -17,6 +17,8 @@
  */
 package com.dzlier.combine;
 
+import lombok.NonNull;
+
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,96 +28,91 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import lombok.NonNull;
-
 /**
  * Implementation of {@link List} that checks whether an element
- * 
- * @param <E>
- *            Elements of the list
+ *
+ * @param <E> Elements of the list
  */
 public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
-    private final List<E> backingList;
 
-    public CombiningList(@NonNull List<E> backingList) {
-        this.backingList = backingList;
-    }
+  private final List<E> backingList;
 
-    @Override
-    public E get(int index) {
-        return backingList.get(index);
-    }
+  public CombiningList(@NonNull List<E> backingList) {
+    this.backingList = backingList;
+  }
 
-    @Override
-    public int size() {
-        return backingList.size();
-    }
+  @Override
+  public E get(int index) {
+    return backingList.get(index);
+  }
 
-    @Override
-    public int indexOf(Object o) {
-        return backingList.indexOf(o);
-    }
+  @Override
+  public int size() {
+    return backingList.size();
+  }
 
-    /**
-     * If list contains any elements that match matcher, combine element with each of those elements
-     * Otherwise add as normal
-     *
-     * @param element
-     *            element to add/combine
-     * @param matcher
-     *            matcher to determine if existing elements should be combined with new one
-     * @return number of elements that were modified (1 if added)
-     */
-    public int add(E element, Predicate<E> matcher) {
-        if (element == null || matcher == null) {
-            return 0;
-        }
-        int numChanged = stream()
-            .filter(matcher)
-            .map(e -> e.combine(element))
-            .collect(Collectors.summingInt(changed -> changed ? 1 : 0));
-        if (numChanged > 0) {
-            return numChanged;
-        }
-        backingList.add(element);
-        return 1;
-    }
+  @Override
+  public int indexOf(Object o) {
+    return backingList.indexOf(o);
+  }
 
-    /**
-     * Adds a element to backing list without performing any combination.
-     * Advised to use {@code add(E, Predicate<E>)} instead.
-     *
-     * @param element
-     *            element to add to list
-     * @return whether list was modified.
-     */
-    @Override
-    public boolean add(E element) {
-        return add(element, e -> false) > 0;
+  /**
+   * If list contains any elements that match matcher, combine element with each of those elements
+   * Otherwise add as normal
+   *
+   * @param element element to add/combine
+   * @param matcher matcher to determine if existing elements should be combined with new one
+   * @return number of elements that were modified (1 if added)
+   */
+  public int add(E element, Predicate<E> matcher) {
+    if (element == null || matcher == null) {
+      return 0;
     }
+    int numChanged = stream()
+        .filter(matcher)
+        .map(e -> e.combine(element))
+        .collect(Collectors.summingInt(changed -> changed ? 1 : 0));
+    if (numChanged > 0) {
+      return numChanged;
+    }
+    backingList.add(element);
+    return 1;
+  }
 
-    @Override
-    public void forEach(Consumer<? super E> action) {
-        backingList.forEach(action);
-    }
+  /**
+   * Adds a element to backing list without performing any combination. Advised to use {@code add(E,
+   * Predicate<E>)} instead.
+   *
+   * @param element element to add to list
+   * @return whether list was modified.
+   */
+  @Override
+  public boolean add(E element) {
+    return add(element, e -> false) > 0;
+  }
 
-    @Override
-    public Iterator<E> iterator() {
-        return backingList.iterator();
-    }
+  @Override
+  public void forEach(Consumer<? super E> action) {
+    backingList.forEach(action);
+  }
 
-    @Override
-    public ListIterator<E> listIterator() {
-        return backingList.listIterator();
-    }
+  @Override
+  public Iterator<E> iterator() {
+    return backingList.iterator();
+  }
 
-    @Override
-    public Stream<E> parallelStream() {
-        return backingList.parallelStream();
-    }
+  @Override
+  public ListIterator<E> listIterator() {
+    return backingList.listIterator();
+  }
 
-    @Override
-    public Stream<E> stream() {
-        return backingList.stream();
-    }
+  @Override
+  public Stream<E> parallelStream() {
+    return backingList.parallelStream();
+  }
+
+  @Override
+  public Stream<E> stream() {
+    return backingList.stream();
+  }
 }
