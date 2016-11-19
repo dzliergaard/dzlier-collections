@@ -19,10 +19,8 @@
 package com.dzlier.weight;
 
 import com.dzlier.combine.CombiningList;
-
-import lombok.NonNull;
-
 import java.util.function.Predicate;
+import lombok.NonNull;
 
 public class CombiningWeightedList<E> extends WeightedList<E> {
 
@@ -36,7 +34,8 @@ public class CombiningWeightedList<E> extends WeightedList<E> {
   /**
    * Adds the non-null element element with the weight of weight
    *
-   * @param weight weight to initialize element with, or add to existing element to be combined
+   * @param weight weight to initialize element with, or add to existing element
+   * to be combined
    * @param element element to add or combine with pre-existing elements
    * @return adjusted weight of the element that was added/modified
    */
@@ -53,16 +52,19 @@ public class CombiningWeightedList<E> extends WeightedList<E> {
   }
 
   /**
-   * Adds the non-null element element with the weight of weight. If an element of the list matches
-   * matcher, then element is combined with it instead.
+   * Adds the non-null element element with the weight of weight. If an element
+   * of the list matches matcher, then element is combined with it instead.
    *
-   * @param weight weight to initialize element with, or add to existing element to be combined
+   * @param weight weight to initialize element with, or add to existing element
+   * to be combined
    * @param element element to add or combine with pre-existing elements
-   * @param matcher {@link Predicate} to match existing elements to know which to combine with
-   * element
+   * @param matcher {@link Predicate} to match existing elements to know which
+   * to combine with element
    * @return adjusted weight of the element that was added/modified
    */
-  public Double add(Double weight, @NonNull E element, @NonNull Predicate<E> matcher) {
+  public Double add(Double weight,
+                    @NonNull E element,
+                    @NonNull Predicate<E> matcher) {
     if (weight < 0 || element == null) {
       return -1.0;
     }
@@ -71,5 +73,18 @@ public class CombiningWeightedList<E> extends WeightedList<E> {
     Node toAdd = new Node(weight, element);
     combiningList.add(toAdd, n -> n.itemMatches(matcher));
     return toAdd.weight;
+  }
+
+  /**
+   * Adds the non-null element element with the weight of 1.0. If an element of
+   * the list matches matcher, then element is combined with it instead.
+   *
+   * @param element element to add or combine with pre-existing elements
+   * @param matcher {@link Predicate} to match existing elements to know which
+   * to combine with element
+   * @return adjusted weight of the element that was added/modified
+   */
+  public Double add(@NonNull E element, @NonNull Predicate<E> matcher) {
+    return add(1.0, element, matcher);
   }
 }
