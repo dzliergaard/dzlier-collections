@@ -28,22 +28,20 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Java implementation of a Markov chain of generic type. When creating a Markov
- * chain, you must provide a {@link Composer} which is able to separate a single
- * element of K into multiple V's, and vice versa. A basic example is a Composer
- * of strings that separates and joins on spaces, which is available from
- * {@code MarkovChain.stringChain(" ")}.
+ * Java implementation of a Markov chain of generic type. When creating a Markov chain, you must
+ * provide a {@link Composer} which is able to separate a single element of K into multiple V's, and
+ * vice versa. A basic example is a Composer of strings that separates and joins on spaces, which is
+ * available from {@code MarkovChain.stringChain(" ")}.
  */
 public class MarkovChain<K, V> {
 
-  @VisibleForTesting final Node root;
-  @VisibleForTesting final Node mid;
-  @VisibleForTesting final int depth;
-  private Composer<K, V> composer;
+  private final Node mid;
+  private final Node root;
+  @VisibleForTesting
+  final Composer<K, V> composer;
 
-  public MarkovChain(Composer<K, V> composer) {
-    this(composer, 0);
-  }
+  @VisibleForTesting
+  int depth;
 
   public MarkovChain(Composer<K, V> composer, int depth) {
     this.root = new Node(null);
@@ -52,9 +50,21 @@ public class MarkovChain<K, V> {
     this.composer = composer;
   }
 
+  public MarkovChain(Composer<K, V> composer) {
+    this(composer, Integer.MAX_VALUE);
+  }
+
+  public MarkovChain(Function<K, List<V>> separator, Function<List<V>, K> joiner) {
+    this(new Composer<>(separator, joiner));
+  }
+
+  public MarkovChain(Function<K, List<V>> separator, Function<List<V>, K> joiner, int depth) {
+    this(new Composer<>(separator, joiner), depth);
+  }
+
   /**
-   * Creates a {@link MarkovChain} with no depth limit that transforms strings
-   * by splitting and joining them on the provided delimiter
+   * Creates a {@link MarkovChain} with no depth limit that transforms strings by splitting and
+   * joining them on the provided delimiter
    *
    * @param delimiter {@link String} to split & join Strings on
    * @return new {@link MarkovChain}
@@ -64,28 +74,26 @@ public class MarkovChain<K, V> {
   }
 
   /**
-   * Creates a {@link MarkovChain} with provided depth that transforms strings
-   * by splitting and joining them on the provided delimiter
+   * Creates a {@link MarkovChain} with provided depth that transforms strings by splitting and
+   * joining them on the provided delimiter
    *
    * @param delimiter {@link String} to split & join Strings on
    * @param depth depth of chain
    * @return new {@link MarkovChain}
    */
-  public static MarkovChain<String, String> stringChain(String delimiter,
-                                                        int depth) {
+  public static MarkovChain<String, String> stringChain(String delimiter, int depth) {
     Splitter splitter = Splitter.on(delimiter);
     Joiner joiner = Joiner.on(delimiter);
-    return new MarkovChain<>(new Composer<>(splitter::splitToList,
-                                            joiner::join), depth);
+    return new MarkovChain<>(new Composer<>(splitter::splitToList, joiner::join), depth);
   }
 
   /**
-   * Using the {@link Composer}, splits the provided item K into series of 0 or
-   * more V's, and adds them to the markov chain
+   * Using the {@link Composer}, splits the provided item K into series of 0 or more V's, and adds
+   * them to the markov chain
    *
    * @param item K to split into series of 0 or more V's.
    */
-  public void separateAndAdd(K item) {
+  public void process(K item) {
     List<V> chain = Lists.newLinkedList(this.composer.separate(item));
     if (chain.size() <= depth) {
       root.add(chain).end();
@@ -95,14 +103,16 @@ public class MarkovChain<K, V> {
       while (chain.size() > 0) {
         chain.remove(0);
         node = mid.add(chain.subList(0, Math.min(chain.size(), depth)));
+        if (chain.size() < depth) {
+          node.end();
+        }
       }
-      node.end();
     }
   }
 
   /**
-   * Using all the previously provided sample K's, generate a K comprised of
-   * probabilistically sequenced components V.
+   * Using all the previously provided sample K's, generate a K comprised of probabilistically
+   * sequenced components V.
    *
    * @return An item K probabilistically resembling previous examples given.
    */
@@ -120,18 +130,23 @@ public class MarkovChain<K, V> {
     node = mid.get(chain.subList(1, chain.size())).random();
     while (node != null && node.item != null) {
       Optional.ofNullable(node.item).ifPresent(chain::add);
-      node = mid.get(chain.subList(chain.size() - depth + 1, chain.size()))
-                .random();
+      node = mid.get(chain.subList(chain.size() - depth + 1, chain.size())).random();
     }
     return composer.join(chain);
   }
 
-  @VisibleForTesting Node get(K item) {
+  @VisibleForTesting
+  Node get(K item) {
     List<V> chain = this.composer.separate(item);
     if (chain.size() <= depth) {
       return root.get(chain);
     }
     return mid.get(chain.subList(chain.size() - depth, chain.size()));
+  }
+
+  @VisibleForTesting
+  Node getMid(K item) {
+    return mid.get(this.composer.separate(item));
   }
 
   @VisibleForTesting
@@ -188,8 +203,7 @@ public class MarkovChain<K, V> {
     private final Function<K1, List<V1>> separatorFunction;
     private final Function<List<V1>, K1> joinerFunction;
 
-    public Composer(Function<K1, List<V1>> separator,
-                    Function<List<V1>, K1> joiner) {
+    public Composer(Function<K1, List<V1>> separator, Function<List<V1>, K1> joiner) {
       this.separatorFunction = separator;
       this.joinerFunction = joiner;
     }
