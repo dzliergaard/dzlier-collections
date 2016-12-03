@@ -17,16 +17,14 @@
  */
 package com.dzlier.combine;
 
-import lombok.NonNull;
-
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 
 /**
  * Implementation of {@link List} that checks whether an element
@@ -36,14 +34,42 @@ import java.util.stream.Stream;
 public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
 
   private final List<E> backingList;
+  private final BiFunction<E, E, Boolean> matcher;
 
+  /**
+   * Basic {@link CombiningList} that uses primitive equivalence as a matcher to determine whether
+   * to combine its elements when adding. Use {@code CombiningList(backingList, matcher)} instead.
+   *
+   * @param backingList Backing list to store elements in.
+   */
   public CombiningList(@NonNull List<E> backingList) {
+    this(backingList, (e1, e2) -> e1 == e2);
+  }
+
+  /**
+   * Combines elements based on {@link BiFunction} matcher that takes accepts to E elements and
+   * returns whether they should be combined or not.
+   *
+   * @param backingList Backing list in which to store elements.
+   * @param matcher {@link BiFunction} that evaluates whether elements should be combined.
+   */
+  public CombiningList(@NonNull List<E> backingList, BiFunction<E, E, Boolean> matcher) {
     this.backingList = backingList;
+    this.matcher = matcher;
   }
 
   @Override
   public E get(int index) {
     return backingList.get(index);
+  }
+
+  /**
+   * Returns first list element such that input {@code BiFunction}.apply(item, e) == true.
+   *
+   * @return First matching element E from list.
+   */
+  public E get(E toFind) {
+    return backingList.stream().filter(e -> matcher.apply(e, toFind)).findFirst().orElse(null);
   }
 
   @Override
@@ -58,37 +84,24 @@ public class CombiningList<E extends Combine<E>> extends AbstractList<E> {
 
   /**
    * If list contains any elements that match matcher, combine element with each of those elements
-   * Otherwise add as normal
+   * Otherwise add as normal.
    *
-   * @param element element to add/combine
-   * @param matcher matcher to determine if existing elements should be combined with new one
-   * @return number of elements that were modified (1 if added)
-   */
-  public int add(E element, Predicate<E> matcher) {
-    if (element == null || matcher == null) {
-      return 0;
-    }
-    int numChanged = stream()
-        .filter(matcher)
-        .map(e -> e.combine(element))
-        .collect(Collectors.summingInt(changed -> changed ? 1 : 0));
-    if (numChanged > 0) {
-      return numChanged;
-    }
-    backingList.add(element);
-    return 1;
-  }
-
-  /**
-   * Adds a element to backing list without performing any combination. Advised to use {@code add(E,
-   * Predicate<E>)} instead.
-   *
-   * @param element element to add to list
-   * @return whether list was modified.
+   * @param element Element to add/combine.
+   * @return Number of elements that were modified (1 if added).
    */
   @Override
   public boolean add(E element) {
-    return add(element, e -> false) > 0;
+    if (element == null || matcher == null) {
+      return false;
+    }
+    boolean modified = stream()
+                           .filter(e -> matcher.apply(e, element))
+                           .map(e -> e.combine(element))
+                           .count() > 0;
+    if (!modified) {
+      backingList.add(element);
+    }
+    return true;
   }
 
   @Override

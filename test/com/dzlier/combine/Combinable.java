@@ -18,10 +18,14 @@
 
 package com.dzlier.combine;
 
+import com.google.common.collect.Lists;
+import java.util.List;
+
 /**
  * Test class that implements {@link Combine} interface
  */
 class Combinable implements Combine<Combinable> {
+  private static int ID = 0;
 
   final int id;
   // number of other elements that have been combined into this one
@@ -30,9 +34,11 @@ class Combinable implements Combine<Combinable> {
   Combinable lastCombined;
   // if this element has been combined into another element
   boolean hasBeenCombined = false;
+  // Elements this Combinable can combine with
+  List<Combinable> canCombineWith = Lists.newArrayList();
 
-  Combinable(int id) {
-    this.id = id;
+  Combinable() {
+    this.id = ID++;
   }
 
   @Override
@@ -46,5 +52,10 @@ class Combinable implements Combine<Combinable> {
   @Override
   public int compareTo(Combinable o) {
     return 0;
+  }
+
+  public void canCombineWith(Combinable b) {
+    this.canCombineWith.add(b);
+    b.canCombineWith.add(this);
   }
 }

@@ -28,11 +28,6 @@ import org.junit.Test;
  */
 public class CombiningMapTest {
 
-  private static final Integer ID_A = 1;
-  private static final Integer ID_B = 2;
-  private static final Integer ID_C = 3;
-  private static final Integer ID_D = 4;
-  private static final Integer NO_MATCH_ID = 100;
   private CombiningMap<Integer, Combinable> map;
   private Combinable A;
   private Combinable B;
@@ -42,17 +37,17 @@ public class CombiningMapTest {
   @Before
   public void setup() {
     map = new CombiningMap<>();
-    A = new Combinable(ID_A);
-    B = new Combinable(ID_B);
-    C = new Combinable(ID_C);
-    D = new Combinable(ID_D);
+    A = new Combinable();
+    B = new Combinable();
+    C = new Combinable();
+    D = new Combinable();
   }
 
   @Test
   public void testPutNoneMatch() {
-    map.put(ID_A, A);
-    map.put(ID_B, B);
-    map.put(ID_C, C);
+    map.put(A.id, A);
+    map.put(B.id, B);
+    map.put(C.id, C);
 
     assertEquals("Map should have 3 elements", map.size(), 3);
     assertCombinations(A, null, 0, false);
@@ -62,10 +57,10 @@ public class CombiningMapTest {
 
   @Test
   public void testPutFirstMatches() {
-    assertEquals(A, map.put(ID_A, A));
-    assertEquals(B, map.put(ID_B, B));
-    assertEquals(A, map.put(ID_A, C));
-    assertEquals(D, map.put(ID_D, D));
+    assertEquals(A, map.put(A.id, A));
+    assertEquals(B, map.put(B.id, B));
+    assertEquals(A, map.put(A.id, C));
+    assertEquals(D, map.put(D.id, D));
 
     assertEquals("Map should have 3 elements", map.size(), 3);
     assertCombinations(A, C, 1, false);
@@ -76,10 +71,10 @@ public class CombiningMapTest {
 
   @Test
   public void testPutMiddleMatches() {
-    assertEquals(A, map.put(ID_A, A));
-    assertEquals(B, map.put(ID_B, B));
-    assertEquals(C, map.put(ID_C, C));
-    assertEquals(B, map.put(ID_B, D));
+    assertEquals(A, map.put(A.id, A));
+    assertEquals(B, map.put(B.id, B));
+    assertEquals(C, map.put(C.id, C));
+    assertEquals(B, map.put(B.id, D));
 
     assertEquals("Map should have 3 elements", map.size(), 3);
     assertCombinations(A, null, 0, false);
@@ -90,10 +85,10 @@ public class CombiningMapTest {
 
   @Test
   public void testPutLastMatches() {
-    assertEquals(A, map.put(ID_A, A));
-    assertEquals(B, map.put(ID_B, B));
-    assertEquals(C, map.put(ID_C, C));
-    assertEquals(C, map.put(ID_C, D));
+    assertEquals(A, map.put(A.id, A));
+    assertEquals(B, map.put(B.id, B));
+    assertEquals(C, map.put(C.id, C));
+    assertEquals(C, map.put(C.id, D));
 
     assertEquals("Map should have 3 elements", map.size(), 3);
     assertCombinations(A, null, 0, false);
@@ -104,10 +99,10 @@ public class CombiningMapTest {
 
   @Test
   public void testPutElementMatchedTwice() {
-    assertEquals(A, map.put(ID_A, A));
-    assertEquals(B, map.put(ID_B, B));
-    assertEquals(A, map.put(ID_A, C));
-    assertEquals(A, map.put(ID_A, D));
+    assertEquals(A, map.put(A.id, A));
+    assertEquals(B, map.put(B.id, B));
+    assertEquals(A, map.put(A.id, C));
+    assertEquals(A, map.put(A.id, D));
 
     assertEquals("Map should have 2 elements", map.size(), 2);
     assertCombinations(A, D, 2, false);

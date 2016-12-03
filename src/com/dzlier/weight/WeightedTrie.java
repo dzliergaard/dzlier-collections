@@ -19,18 +19,19 @@
 package com.dzlier.weight;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 /**
  * Implementation of Trie with weighted children to choose from
+ *
+ * Deprecated: Use {@link com.dzlier.markov.MarkovChain} instead.
  */
+@Deprecated
 public class WeightedTrie<T> {
 
   @VisibleForTesting
@@ -47,10 +48,10 @@ public class WeightedTrie<T> {
    * @param weight weight to add to each element of chain
    * @param chain chain of elements to add from the root down. Each item in the chain is added as a
    * child of the previous element.
-   * @return new weight of last element of the added chain
+   * @return Whether TrieNode was modified as a result of the action.
    */
-  public Double addChain(Double weight, T[] chain) {
-    return root.addChain(weight, chain);
+  public boolean addChain(Double weight, T[] chain) {
+    return root.addChain(weight, chain) != null;
   }
 
   /**
@@ -88,23 +89,19 @@ public class WeightedTrie<T> {
 
     TrieNode(T item) {
       this.item = item;
-      this.children = new CombiningWeightedList<>();
+      this.children = new CombiningWeightedList<TrieNode>(TrieNode::matches);
     }
 
-    Double addChain(Double weight, T[] groups) {
+    TrieNode addChain(Double weight, T[] groups) {
       TrieNode node = this;
-      Double newWeight = 0.0;
       for (T group : groups) {
         if (group == null) {
-          return newWeight;
+          return null;
         }
 
-        newWeight = node.children.add(weight, new TrieNode(group), n -> n.matchesItem(group));
-        Optional<TrieNode> child = node.children.findFirst(n -> n.matchesItem(group));
-        node = child.orElseThrow(
-            () -> new IllegalStateException("List does not contain newly added element"));
+        node = node.children.add(weight, new TrieNode(group));
       }
-      return newWeight;
+      return node;
     }
 
     Optional<TrieNode> get(T[] groups) {
@@ -112,7 +109,7 @@ public class WeightedTrie<T> {
       for (T group : groups) {
         node = node
             .map(TrieNode::getChildren)
-            .map(children -> children.findFirst(t -> t.matchesItem(group)))
+            .map(children -> children.findFirst(t -> t.matches(new TrieNode(group))))
             .orElse(Optional.empty());
       }
       return node;
@@ -129,8 +126,8 @@ public class WeightedTrie<T> {
       return get(groups).map(TrieNode::random);
     }
 
-    boolean matchesItem(T that) {
-      return that != null && this.item.equals(that);
+    boolean matches(TrieNode that) {
+      return that != null && (this.item == null ? that.item == null : this.item.equals(that.item));
     }
   }
 }

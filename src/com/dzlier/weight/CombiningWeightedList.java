@@ -19,72 +19,60 @@
 package com.dzlier.weight;
 
 import com.dzlier.combine.CombiningList;
-import java.util.function.Predicate;
-import lombok.NonNull;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 public class CombiningWeightedList<E> extends WeightedList<E> {
 
-  private CombiningList<Node> combiningList;
+  private final CombiningList<Node> combiningList;
+  private final BiFunction<Node, Node, Boolean> nodeMatcher;
 
+  /**
+   * List that combines elements as it adds them, with primitive equivalence when deciding whether
+   * to combine. Use {@code CombiningWeightedList(BiFunction<E, E, Boolean>)} instead.
+   */
   public CombiningWeightedList() {
-    super();
-    combiningList = new CombiningList<>(backingList);
+    this((e1, e2) -> e1 == e2);
   }
 
   /**
-   * Adds the non-null element element with the weight of weight
+   * List that combines elements as it adds them, using itemMatcher to decide whether to combine.
    *
-   * @param weight weight to initialize element with, or add to existing element
-   * to be combined
-   * @param element element to add or combine with pre-existing elements
-   * @return adjusted weight of the element that was added/modified
+   * @param itemMatcher {@link BiFunction} that accepts to elements E and returns boolean of whether
+   * to combine them.
+   */
+  public CombiningWeightedList(BiFunction<E, E, Boolean> itemMatcher) {
+    super();
+    nodeMatcher = (n1, n2) -> itemMatcher.apply(n1.element, n2.element);
+    this.combiningList = new CombiningList<>(backingList, nodeMatcher);
+  }
+
+  /**
+   * Adds an element with given weight. If element already exists in list, combines them instead.
+   *
+   * @param weight weight to initialize element with, or add to existing element to be combined.
+   * @param element element to add or combine with pre-existing elements.
+   * @return Element added to list, or preexisting list item if combined.
+   */
+  public E add(Double weight, E element) {
+    if (weight <= 0 || element == null) {
+      return null;
+    }
+
+    total += weight;
+    Node toAdd = new Node(weight, element);
+    combiningList.add(toAdd);
+    return Optional.ofNullable(combiningList.get(toAdd)).map(n -> n.element).orElse(null);
+  }
+
+  /**
+   * Adds element with weight of 1.
+   *
+   * @param element element to add to list
+   * @return Whether list was modified by this add.
    */
   @Override
-  public Double add(Double weight, @NonNull E element) {
-    if (weight < 0 || element == null) {
-      return -1.0;
-    }
-
-    total += weight;
-    Node toAdd = new Node(weight, element);
-    combiningList.add(toAdd, n -> n.itemEquals(element));
-    return toAdd.weight;
-  }
-
-  /**
-   * Adds the non-null element element with the weight of weight. If an element
-   * of the list matches matcher, then element is combined with it instead.
-   *
-   * @param weight weight to initialize element with, or add to existing element
-   * to be combined
-   * @param element element to add or combine with pre-existing elements
-   * @param matcher {@link Predicate} to match existing elements to know which
-   * to combine with element
-   * @return adjusted weight of the element that was added/modified
-   */
-  public Double add(Double weight,
-                    @NonNull E element,
-                    @NonNull Predicate<E> matcher) {
-    if (weight < 0 || element == null) {
-      return -1.0;
-    }
-    total += weight;
-
-    Node toAdd = new Node(weight, element);
-    combiningList.add(toAdd, n -> n.itemMatches(matcher));
-    return toAdd.weight;
-  }
-
-  /**
-   * Adds the non-null element element with the weight of 1.0. If an element of
-   * the list matches matcher, then element is combined with it instead.
-   *
-   * @param element element to add or combine with pre-existing elements
-   * @param matcher {@link Predicate} to match existing elements to know which
-   * to combine with element
-   * @return adjusted weight of the element that was added/modified
-   */
-  public Double add(@NonNull E element, @NonNull Predicate<E> matcher) {
-    return add(1.0, element, matcher);
+  public boolean add(E element) {
+    return add(1.0, element) != null || element == null;
   }
 }

@@ -19,53 +19,54 @@ package com.dzlier.markov;
 
 import com.google.common.base.Splitter;
 import java.util.List;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link MarkovChain} on Strings
+ * Unit tests for {@link MarkovChain} on Strings.
  */
 public class MarkovChainStringTest extends MarkovChainTestBase<String, String> {
   public static final Splitter SPLITTER = Splitter.on(" ");
 
-  @Before
-  public void setUp() {
-    markov = MarkovChain.stringChain(" ");
-    composer = markov.composer;
-  }
-
   @Test
   public void testSingleLink() {
+    markov = MarkovChain.stringChain(" ");
+    composer = markov.composer;
     testSingleLink("hello");
   }
 
   @Test
   public void testTwoLink() {
+    markov = MarkovChain.stringChain(" ");
+    composer = markov.composer;
     testTwoLink(SPLITTER.splitToList("hello world"));
   }
 
   @Test
   public void testTwoLinkDepthOne() {
+    markov = MarkovChain.stringChain(" ", 1);
+    composer = markov.composer;
     testTwoLinkDepthOne(SPLITTER.splitToList("hello world"));
   }
 
   @Test
   public void testThreeLinkDepthTwo() {
+    markov = MarkovChain.stringChain(" ", 2);
+    composer = markov.composer;
     testThreeLinkDepthTwo(SPLITTER.splitToList("hello again world"));
   }
 
   @Test
-  public void testSixLinkDepthTwo() {
-    testSixLinkDepthTwoWithRepeat(SPLITTER.splitToList("hello world and mom and dad"));
+  public void testSixLink() {
+    markov = MarkovChain.stringChain(" ");
+    composer = markov.composer;
+    testSixLink(SPLITTER.splitToList("hello world and mom and dad"));
   }
 
-  @Test
-  public void testSixLinkDepthThree() {
-    testSixLinkDepthThreeWithRepeat(SPLITTER.splitToList("hello world and mom and dad"));
-  }
 
   @Test
   public void testThreeChainsDepthTwo() {
+    markov = MarkovChain.stringChain(" ", 2);
+    composer = markov.composer;
     List<String> chain1 = SPLITTER.splitToList("hello world and dad");
     List<String> chain2 = SPLITTER.splitToList("hello mom and dad");
     List<String> chain3 = SPLITTER.splitToList("goodbye dad and world");

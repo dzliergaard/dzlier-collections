@@ -1,7 +1,6 @@
 package com.dzlier.markov;
 
 import com.dzlier.markov.MarkovChain.Composer;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -17,12 +16,6 @@ class Markov {
 
     Chain(List<Link> links) {
       this.links = links;
-      this.id = IDS++;
-    }
-
-    Chain(Link link) {
-      this.links = new ArrayList<>();
-      this.links.add(link);
       this.id = IDS++;
     }
 

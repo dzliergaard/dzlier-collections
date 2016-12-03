@@ -30,118 +30,158 @@ import java.util.function.Function;
 /**
  * Java implementation of a Markov chain of generic type. When creating a Markov chain, you must
  * provide a {@link Composer} which is able to separate a single element of K into multiple V's, and
- * vice versa. A basic example is a Composer of strings that separates and joins on spaces, which is
- * available from {@code MarkovChain.stringChain(" ")}.
+ * vice versa. A basic example is a {@link Composer} of strings that separates and joins on spaces,
+ * which is available from {@code MarkovChain.stringChain(" ")}.
  */
 public class MarkovChain<K, V> {
 
   private final Node mid;
   private final Node root;
-  @VisibleForTesting
-  final Composer<K, V> composer;
+  @VisibleForTesting final Composer<K, V> composer;
 
-  @VisibleForTesting
-  int depth;
+  private final int maxDepth;
 
-  public MarkovChain(Composer<K, V> composer, int depth) {
+  /**
+   * Create a {@link MarkovChain} that accepts and generates objects of type K by breaking them down
+   * into type V via the provided {@link Composer}. Max depth option limits the size of the trees
+   * the chain creates.
+   *
+   * @param composer Composer that can break down K's into V's, and vice versa.
+   * @param maxDepth Maximum depth of chain.
+   */
+  public MarkovChain(Composer<K, V> composer, int maxDepth) {
     this.root = new Node(null);
     this.mid = new Node(null);
-    this.depth = depth;
     this.composer = composer;
+    this.maxDepth = Math.max(1, maxDepth);
   }
 
+  /**
+   * Create a {@link MarkovChain} that accepts and generates objects of type K by breaking them down
+   * into type V via the provided {@link Composer}.
+   *
+   * @param composer Composer that can break down K's into V's, and vice versa.
+   */
   public MarkovChain(Composer<K, V> composer) {
-    this(composer, Integer.MAX_VALUE);
+    this.root = new Node(null);
+    this.mid = new Node(null);
+    this.composer = composer;
+    this.maxDepth = Integer.MAX_VALUE;
   }
 
+  /**
+   * Create a maximum maxDepth {@link MarkovChain} that accepts and generates objects of type K by
+   * breaking them down into type V via the provided separator and joiner functions.
+   *
+   * @param separator Function that separates K's into chains of V's.
+   * @param joiner Function that joins chains of V's back into K's.
+   */
   public MarkovChain(Function<K, List<V>> separator, Function<List<V>, K> joiner) {
     this(new Composer<>(separator, joiner));
   }
 
-  public MarkovChain(Function<K, List<V>> separator, Function<List<V>, K> joiner, int depth) {
-    this(new Composer<>(separator, joiner), depth);
+  /**
+   * Create a {@link MarkovChain} that accepts and generates objects of type K by breaking them down
+   * into type V via the provided separator and joiner functions. Max depth option limits the size
+   * of the trees the chain creates.
+   *
+   * @param separator Function that separates K's into chains of V's.
+   * @param joiner Function that joins chains of V's back into K's.
+   * @param maxDepth Maximum maxDepth of chain.
+   */
+  public MarkovChain(Function<K, List<V>> separator, Function<List<V>, K> joiner, int maxDepth) {
+    this(new MarkovChain.Composer<>(separator, joiner), maxDepth);
   }
 
   /**
-   * Creates a {@link MarkovChain} with no depth limit that transforms strings by splitting and
-   * joining them on the provided delimiter
+   * Creates a {@link MarkovChain} that transforms strings by splitting and joining them on the
+   * provided delimiter.
    *
-   * @param delimiter {@link String} to split & join Strings on
-   * @return new {@link MarkovChain}
+   * @param delimiter {@link String} to split & join Strings on.
+   * @param maxDepth Maximum depth of chain.
+   * @return New {@link MarkovChain}.
+   */
+  public static MarkovChain<String, String> stringChain(String delimiter, int maxDepth) {
+    Splitter splitter = Splitter.on(delimiter);
+    Joiner joiner = Joiner.on(delimiter);
+    return new MarkovChain<>(new Composer<>(splitter::splitToList, joiner::join), maxDepth);
+  }
+
+  /**
+   * Creates a {@link MarkovChain} that transforms strings by splitting and joining them on the
+   * provided delimiter. Max depth option limits the size of the trees the chain creates.
+   *
+   * @param delimiter {@link String} to split & join Strings on.
+   * @return New {@link MarkovChain}.
    */
   public static MarkovChain<String, String> stringChain(String delimiter) {
     return stringChain(delimiter, Integer.MAX_VALUE);
   }
 
   /**
-   * Creates a {@link MarkovChain} with provided depth that transforms strings by splitting and
-   * joining them on the provided delimiter
+   * Splits the provided item K into series of 0 or more V's, and adds them to the markov chain.
    *
-   * @param delimiter {@link String} to split & join Strings on
-   * @param depth depth of chain
-   * @return new {@link MarkovChain}
-   */
-  public static MarkovChain<String, String> stringChain(String delimiter, int depth) {
-    Splitter splitter = Splitter.on(delimiter);
-    Joiner joiner = Joiner.on(delimiter);
-    return new MarkovChain<>(new Composer<>(splitter::splitToList, joiner::join), depth);
-  }
-
-  /**
-   * Using the {@link Composer}, splits the provided item K into series of 0 or more V's, and adds
-   * them to the markov chain
-   *
-   * @param item K to split into series of 0 or more V's.
+   * @param item K to split.
    */
   public void process(K item) {
     List<V> chain = Lists.newLinkedList(this.composer.separate(item));
-    if (chain.size() <= depth) {
-      root.add(chain).end();
+    if (chain.size() <= maxDepth) {
+      root.add(chain).isEnd();
     } else {
-      root.add(chain.subList(0, depth));
-      Node node = mid;
-      while (chain.size() > 0) {
-        chain.remove(0);
-        node = mid.add(chain.subList(0, Math.min(chain.size(), depth)));
-        if (chain.size() < depth) {
-          node.end();
-        }
+      root.add(chain.subList(0, maxDepth));
+    }
+    while (chain.size() > 0) {
+      chain.remove(0);
+      Node node = mid.add(chain.subList(0, Math.min(chain.size(), maxDepth)));
+      if (chain.size() < maxDepth) {
+        node.isEnd();
       }
     }
   }
 
   /**
-   * Using all the previously provided sample K's, generate a K comprised of probabilistically
-   * sequenced components V.
+   * Generate K of probabilistically sequenced components V, with the seed maxDepth provided. Seed
+   * maxDepth determines how many links back the chain looks when choosing a next segment.
    *
-   * @return An item K probabilistically resembling previous examples given.
+   * @param depth Desired seed depth, up to max depth of tree.
+   * @return New K probabilistically resembling sample base, based on seed depth.
    */
-  public K generate() {
-    List<V> chain = new LinkedList<>();
-    Node node = root.random();
-    while (chain.size() < depth && node.item != null) {
-      chain.add(node.item);
-      node = node.random();
+  public K generate(int depth) {
+    depth = Math.min(depth, maxDepth);
+    List<V> seed = new LinkedList<>();
+    Node node = root.pick();
+    while (seed.size() < depth) {
+      if (node.item == null) {
+        break;
+      }
+      seed.add(node.item);
+      node = node.pick();
     }
     // Null-value node indicates natural end of chain.
     if (node != null && node.item == null) {
-      return composer.join(chain);
+      return composer.join(seed);
     }
-    node = mid.get(chain.subList(1, chain.size())).random();
+    node = mid.get(seed.subList(1, seed.size())).pick();
     while (node != null && node.item != null) {
-      Optional.ofNullable(node.item).ifPresent(chain::add);
-      node = mid.get(chain.subList(chain.size() - depth + 1, chain.size())).random();
+      Optional.ofNullable(node.item).ifPresent(seed::add);
+      node = mid.get(seed.subList(seed.size() - depth + 1, seed.size())).pick();
     }
-    return composer.join(chain);
+    return composer.join(seed);
+  }
+
+  /**
+   * Generate a K comprised of probabilistically sequenced components V, with maximum seed maxDepth.
+   * Seed maxDepth determines how many links back the chain looks when choosing a next segment.
+   *
+   * @return Item K probabilistically resembling sample base based on seed maxDepth.
+   */
+  public K generate() {
+    return generate(Integer.MAX_VALUE);
   }
 
   @VisibleForTesting
   Node get(K item) {
-    List<V> chain = this.composer.separate(item);
-    if (chain.size() <= depth) {
-      return root.get(chain);
-    }
-    return mid.get(chain.subList(chain.size() - depth, chain.size()));
+    return root.get(this.composer.separate(item));
   }
 
   @VisibleForTesting
@@ -154,24 +194,33 @@ public class MarkovChain<K, V> {
 
     @VisibleForTesting final V item;
     @VisibleForTesting CombiningWeightedList<Node> children;
+    final boolean isEnd;
 
     Node(V item) {
-      children = new CombiningWeightedList<>();
+      children = new CombiningWeightedList<>(Node::matches);
       this.item = item;
+      this.isEnd = false;
+    }
+
+    private Node() {
+      this.item = null;
+      this.isEnd = true;
     }
 
     Node add(List<V> chain) {
       Node node = this;
       for (V link : chain) {
-        node.children.add(new Node(link), n -> n.matchesItem(link));
-        node = node.children.findFirst(n -> n.matchesItem(link)).orElse(null);
+        Node newNode = new Node(link);
+        node.children.add(newNode);
+        node = node.children.findFirst(n -> n.matches(newNode)).orElse(null);
       }
       return node;
     }
 
-    Node end() {
-      children.add(new Node(null), n -> n.matchesItem(null));
-      return children.findFirst(n -> n.matchesItem(null)).orElse(null);
+    Node isEnd() {
+      Node endNode = new Node();
+      children.add(endNode);
+      return children.findFirst(n -> n.matches(null)).orElse(null);
     }
 
     Node get(V... chain) {
@@ -181,38 +230,54 @@ public class MarkovChain<K, V> {
     Node get(List<V> chain) {
       Node node = this;
       for (V link : chain) {
-        node = node.children.findFirst(n -> n.matchesItem(link)).orElse(null);
+        if (node == null) {
+          break;
+        }
+        node = node.children.findFirst(n -> n.matches(new Node(link))).orElse(null);
       }
       return node;
     }
 
-    Node random() {
+    Node pick() {
       return children.random();
     }
 
-    private boolean matchesItem(V that) {
-      if (this.item == null) {
-        return that == null;
+    private boolean matches(Node that) {
+      if (that == null) {
+        return false;
       }
-      return this.item.equals(that);
+      if (this.isEnd || that.isEnd) {
+        return this.isEnd && that.isEnd;
+      }
+      return this.item == null ? that.item == null : this.item.equals(that.item);
     }
   }
 
+  /**
+   * Used by {@link MarkovChain} to break down items of type K1 into chains of V1's, and vice versa.
+   */
   public static class Composer<K1, V1> {
 
     private final Function<K1, List<V1>> separatorFunction;
     private final Function<List<V1>, K1> joinerFunction;
 
+    /**
+     * Create a {@link Composer} that uses provided separator and joiner functions to break K1's
+     * into chains of V1's, and vice versa.
+     *
+     * @param separator Function that separates K1's into chains of V1's.
+     * @param joiner Function that joins chains of V1's into K1's.
+     */
     public Composer(Function<K1, List<V1>> separator, Function<List<V1>, K1> joiner) {
       this.separatorFunction = separator;
       this.joinerFunction = joiner;
     }
 
-    public List<V1> separate(K1 t) {
+    List<V1> separate(K1 t) {
       return separatorFunction.apply(t);
     }
 
-    public K1 join(List<V1> ts) {
+    K1 join(List<V1> ts) {
       return joinerFunction.apply(ts);
     }
   }

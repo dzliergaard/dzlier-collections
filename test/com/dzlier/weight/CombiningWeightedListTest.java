@@ -32,12 +32,6 @@ import java.util.List;
  */
 public class CombiningWeightedListTest {
 
-  private static final Double ONE = 1.0;
-  private static final Double THREE = 3.0;
-  private static final Double FIVE = 5.0;
-  private static final Double SIX = 6.0;
-  private static final Double SEVEN = 7.0;
-  private static final Double EIGHT = 8.0;
   private static final String A = "A";
   private static final String B = "B";
   private static final String C = "C";
@@ -57,16 +51,16 @@ public class CombiningWeightedListTest {
 
   @Test
   public void testWeightedAddNoCombine() {
-    assertEquals(THREE, list.add(THREE, A));
-    assertEquals(FIVE, list.add(5.0, B));
-    assertEquals(ONE, list.add(1.0, C));
+    assertEquals(A, list.add(3.0, A));
+    assertEquals(B, list.add(5.0, B));
+    assertEquals(C, list.add(1.0, C));
     assertEquals(3, list.size());
   }
 
   @Test
   public void testWeightedAddOneCombine() {
-    assertEquals(SIX, list.add(6.0, C));
-    assertEquals(THREE, list.add(THREE, A));
+    assertEquals(C, list.add(6.0, C));
+    assertEquals(A, list.add(3.0, A));
 
     assertEquals(2, list.size());
 
@@ -74,7 +68,7 @@ public class CombiningWeightedListTest {
     assertEquals(1, top.size());
     assertEquals(C, top.get(0));
 
-    assertEquals(EIGHT, list.add(5.0, A));
+    assertEquals(A, list.add(5.0, A));
     List<String> topTwo = list.top(2);
     assertEquals(2, topTwo.size());
     assertEquals(A, topTwo.get(0));
@@ -82,9 +76,9 @@ public class CombiningWeightedListTest {
 
   @Test
   public void testFindFirst() {
-    assertEquals(SIX, list.add(6.0, A));
-    assertEquals(FIVE, list.add(5.0, B));
-    assertEquals(SEVEN, list.add(2.0, B));
+    assertEquals(A, list.add(6.0, A));
+    assertEquals(B, list.add(5.0, B));
+    assertEquals(B, list.add(2.0, B));
 
     assertEquals(B, list.findFirst(s -> s.matches("\\w")).get());
     assertEquals(A, list.findFirst(s -> s.contains(A)).get());
@@ -93,9 +87,9 @@ public class CombiningWeightedListTest {
 
   @Test
   public void testTop() {
-    assertEquals(THREE, list.add(THREE, A));
-    assertEquals(FIVE, list.add(FIVE, B));
-    assertEquals(ONE, list.add(ONE, C));
+    assertEquals(A, list.add(3.0, A));
+    assertEquals(B, list.add(5.0, B));
+    assertEquals(C, list.add(1.0, C));
 
     List<String> topOne = list.top(1);
     List<String> topTwo = list.top(2);

@@ -19,6 +19,7 @@
 package com.dzlier.combine;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,32 +31,27 @@ import java.util.ArrayList;
  */
 public class CombiningListTest {
 
-  private static final Integer ID_A = 1;
-  private static final Integer ID_B = 2;
-  private static final Integer ID_C = 3;
-  private static final Integer ID_D = 4;
-  private static final Integer NO_MATCH_ID = 100;
+  private static Combinable A;
+  private static Combinable B;
+  private static Combinable C;
+  private static Combinable D;
   private ArrayList<Combinable> backingList;
   private CombiningList<Combinable> list;
-  private Combinable A;
-  private Combinable B;
-  private Combinable C;
-  private Combinable D;
 
   @Before
   public void setup() {
     backingList = new ArrayList<>();
-    list = new CombiningList<>(backingList);
-    A = new Combinable(ID_A);
-    B = new Combinable(ID_B);
-    C = new Combinable(ID_C);
-    D = new Combinable(ID_D);
+    list = new CombiningList<>(backingList, (c1, c2) -> c1.canCombineWith.contains(c2));
+    A = new Combinable();
+    B = new Combinable();
+    C = new Combinable();
+    D = new Combinable();
   }
 
   @Test
   public void testNoCombineAdd() throws Exception {
     list.add(A);
-    list.add(A);
+    list.add(B);
 
     assertListSize(2);
     assertCombinations(A, null, 0, false);
@@ -63,9 +59,9 @@ public class CombiningListTest {
 
   @Test
   public void testAddNoneMatch() {
-    list.add(A, comb -> comb.id == NO_MATCH_ID);
-    list.add(B, comb -> comb.id == NO_MATCH_ID);
-    list.add(C, comb -> comb.id == NO_MATCH_ID);
+    list.add(A);
+    list.add(B);
+    list.add(C);
 
     assertListSize(3);
     assertCombinations(A, null, 0, false);
@@ -75,10 +71,11 @@ public class CombiningListTest {
 
   @Test
   public void testAddFirstMatches() {
-    assertEquals(1, list.add(A, comb -> comb.id == ID_A));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_A));
-    assertEquals(1, list.add(D, comb -> comb.id == ID_D));
+    A.canCombineWith(C);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
     assertListSize(3);
     assertCombinations(A, C, 1, false);
@@ -89,24 +86,27 @@ public class CombiningListTest {
 
   @Test
   public void testAddMiddleMatches() {
-    assertEquals(1, list.add(A, comb -> comb.id == ID_C));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_C));
-    assertEquals(1, list.add(D, comb -> comb.id == ID_B));
+    C.canCombineWith(A);
+    B.canCombineWith(D);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
-    assertListSize(3);
-    assertCombinations(A, null, 0, false);
+    assertListSize(2);
+    assertCombinations(A, C, 1, false);
     assertCombinations(B, D, 1, false);
-    assertCombinations(C, null, 0, false);
+    assertCombinations(C, null, 0, true);
     assertCombinations(D, null, 0, true);
   }
 
   @Test
   public void testAddLastMatches() {
-    assertEquals(1, list.add(A, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_D));
-    assertEquals(1, list.add(D, comb -> comb.id == ID_C));
+    C.canCombineWith(D);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
     assertListSize(3);
     assertCombinations(A, null, 0, false);
@@ -117,10 +117,12 @@ public class CombiningListTest {
 
   @Test
   public void testAddTwoElementsModified() {
-    assertEquals(1, list.add(A, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_D));
-    assertEquals(2, list.add(D, comb -> comb.id <= ID_B));
+    A.canCombineWith(D);
+    B.canCombineWith(D);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
     assertListSize(3);
     assertCombinations(A, D, 1, false);
@@ -131,10 +133,12 @@ public class CombiningListTest {
 
   @Test
   public void testAddElementMatchedTwice() {
-    assertEquals(1, list.add(A, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_A));
-    assertEquals(1, list.add(D, comb -> comb.id == ID_A));
+    A.canCombineWith(C);
+    A.canCombineWith(D);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
     assertListSize(2);
     assertCombinations(A, D, 2, false);
@@ -145,10 +149,13 @@ public class CombiningListTest {
 
   @Test
   public void testAddOneMatchedOnceOneMatchedTwice() {
-    assertEquals(1, list.add(A, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(B, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(2, list.add(C, comb -> comb.id <= ID_B));
-    assertEquals(1, list.add(D, comb -> comb.id == ID_A));
+    A.canCombineWith(C);
+    A.canCombineWith(D);
+    B.canCombineWith(C);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
+    assertTrue(list.add(D));
 
     assertListSize(2);
     assertCombinations(A, D, 2, false);
@@ -159,9 +166,11 @@ public class CombiningListTest {
 
   @Test
   public void testAddMatchNonAddedElement() {
-    assertEquals(1, list.add(A, comb -> comb.id == NO_MATCH_ID));
-    assertEquals(1, list.add(B, comb -> comb.id == ID_A));
-    assertEquals(1, list.add(C, comb -> comb.id == ID_B));
+    A.canCombineWith(B);
+    B.canCombineWith(C);
+    assertTrue(list.add(A));
+    assertTrue(list.add(B));
+    assertTrue(list.add(C));
 
     assertListSize(2);
     assertCombinations(A, B, 1, false);

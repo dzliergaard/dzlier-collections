@@ -18,16 +18,9 @@
 
 package com.dzlier.weight;
 
-import com.google.common.collect.Lists;
-
 import com.dzlier.combine.Combine;
+import com.google.common.collect.Lists;
 import com.sun.javafx.collections.ObservableListWrapper;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,8 +32,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javafx.collections.transformation.SortedList;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Implementation of a list where elements are weighted for random access
@@ -60,29 +56,29 @@ public class WeightedList<E> extends AbstractList<E> {
    * Adds the non-null element element with a weight of 1. {@code add(double, E)} is recommended
    * over this, to ensure specific weights for each element.
    *
-   * @param element element to add to list
-   * @return whether list was modified.
+   * @param element Element to add to list.
+   * @return Whether list was modified.
    */
   @Override
   public boolean add(@NonNull E element) {
-    return add(1.0, element) > 0;
+    return add(1.0, element) != null || element == null;
   }
 
   /**
    * Adds non-null element with a given weight
    *
-   * @param weight weight for new element
-   * @param element element to add to list
-   * @return weight of added element
+   * @param weight Weight for new element.
+   * @param element Element to add to list.
+   * @return Element added to list.
    */
-  public Double add(Double weight, @NonNull E element) {
+  public E add(Double weight, @NonNull E element) {
     if (weight <= 0 || element == null) {
-      return 0.0;
+      return null;
     }
 
     total += weight;
     backingList.add(new Node(weight, element));
-    return weight;
+    return element;
   }
 
   @Override
@@ -103,7 +99,7 @@ public class WeightedList<E> extends AbstractList<E> {
    */
   public Double getWeight(E item) {
     return backingList.stream().filter(n -> n.itemEquals(item)).findFirst().map(Node::getWeight)
-        .orElse(-1.0);
+                      .orElse(-1.0);
   }
 
   /**
@@ -114,7 +110,7 @@ public class WeightedList<E> extends AbstractList<E> {
    */
   public Double getWeight(Predicate<E> matcher) {
     return backingList.stream().filter(n -> matcher.test(n.element)).findFirst()
-        .map(Node::getWeight).orElse(-1.0);
+                      .map(Node::getWeight).orElse(-1.0);
   }
 
   /**
@@ -198,18 +194,11 @@ public class WeightedList<E> extends AbstractList<E> {
   @AllArgsConstructor
   protected class Node implements Comparable<Node>, Combine<Node> {
 
-    @NonNull
-    @Getter(AccessLevel.PRIVATE)
-    Double weight;
-    @NonNull
+    @Getter(AccessLevel.PRIVATE) Double weight;
     final E element;
 
     boolean itemEquals(E that) {
       return element.equals(that);
-    }
-
-    boolean itemMatches(Predicate<E> matcher) {
-      return matcher.test(element);
     }
 
     @Override

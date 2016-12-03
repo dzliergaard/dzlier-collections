@@ -32,9 +32,6 @@ import java.util.List;
  */
 public class WeightedListTest {
 
-  private static final Double ONE = 1.0;
-  private static final Double THREE = 3.0;
-  private static final Double FIVE = 5.0;
   private static final String A = "A";
   private static final String B = "B";
   private static final String C = "C";
@@ -55,16 +52,16 @@ public class WeightedListTest {
 
   @Test
   public void testWeightedAdd() {
-    assertEquals(new Double(THREE), list.add(THREE, A));
-    assertEquals(new Double(FIVE), list.add(FIVE, B));
-    assertEquals(new Double(ONE), list.add(ONE, C));
+    assertEquals(A, list.add(3.0, A));
+    assertEquals(B, list.add(5.0, B));
+    assertEquals(C, list.add(1.0, C));
   }
 
   @Test
   public void testFindFirst() {
-    list.add(ONE, C);
-    list.add(THREE, A);
-    list.add(FIVE, B);
+    list.add(1.0, C);
+    list.add(3.0, A);
+    list.add(5.0, B);
 
     assertEquals(B, list.findFirst(s -> s.matches("\\w")).get());
     assertEquals(A, list.findFirst(s -> s.contains(A)).get());
@@ -74,9 +71,9 @@ public class WeightedListTest {
 
   @Test
   public void testTop() {
-    list.add(THREE, A);
-    list.add(FIVE, B);
-    list.add(ONE, C);
+    list.add(3.0, A);
+    list.add(5.0, B);
+    list.add(1.0, C);
 
     List<String> topOne = list.top(1);
     List<String> topTwo = list.top(2);
@@ -103,23 +100,23 @@ public class WeightedListTest {
 
   @Test
   public void testGetWeight() {
-    list.add(THREE, A);
-    list.add(FIVE, B);
-    list.add(ONE, C);
+    list.add(3.0, A);
+    list.add(5.0, B);
+    list.add(1.0, C);
 
-    assertEquals(THREE, list.getWeight(A));
-    assertEquals(FIVE, list.getWeight(B));
-    assertEquals(ONE, list.getWeight(C));
+    assertEquals(new Double(3.0), list.getWeight(A));
+    assertEquals(new Double(5.0), list.getWeight(B));
+    assertEquals(new Double(1.0), list.getWeight(C));
   }
 
   @Test
   public void testGetWeightMatcher() {
-    list.add(THREE, A);
-    list.add(FIVE, B);
-    list.add(ONE, C);
+    list.add(3.0, A);
+    list.add(5.0, B);
+    list.add(1.0, C);
 
-    assertEquals(THREE, list.getWeight(s -> s.equals(A)));
-    assertEquals(FIVE, list.getWeight(s -> s.equals(B)));
-    assertEquals(ONE, list.getWeight(s -> s.equals(C)));
+    assertEquals(new Double(3.0), list.getWeight(s -> s.equals(A)));
+    assertEquals(new Double(5.0), list.getWeight(s -> s.equals(B)));
+    assertEquals(new Double(1.0), list.getWeight(s -> s.equals(C)));
   }
 }
