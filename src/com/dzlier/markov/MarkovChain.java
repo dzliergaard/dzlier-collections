@@ -124,17 +124,26 @@ public class MarkovChain<K, V> {
    * @param item K to split.
    */
   public void process(K item) {
+    process(item, 1.0);
+  }
+
+  /**
+   * Similar to {@code process(K)}, but forces the given weight instead of using 1.
+   * @param item Item to be processed.
+   * @param weight Forced added weight of object in chain.
+   */
+  public void process(K item, Double weight) {
     List<V> chain = Lists.newLinkedList(this.composer.separate(item));
     if (chain.size() <= maxDepth) {
-      root.add(chain).isEnd();
+      root.add(chain, weight).isEnd(weight);
     } else {
-      root.add(chain.subList(0, maxDepth));
+      root.add(chain.subList(0, maxDepth), weight);
     }
     while (chain.size() > 0) {
       chain.remove(0);
-      Node node = mid.add(chain.subList(0, Math.min(chain.size(), maxDepth)));
+      Node node = mid.add(chain.subList(0, Math.min(chain.size(), maxDepth)), weight);
       if (chain.size() < maxDepth) {
-        node.isEnd();
+        node.isEnd(weight);
       }
     }
   }
@@ -162,7 +171,7 @@ public class MarkovChain<K, V> {
       return composer.join(seed);
     }
     node = mid.get(seed.subList(1, seed.size())).pick();
-    while (node != null && node.item != null) {
+    while (node != null && !node.isEnd) {
       Optional.ofNullable(node.item).ifPresent(seed::add);
       node = mid.get(seed.subList(seed.size() - depth + 1, seed.size())).pick();
     }
@@ -207,19 +216,19 @@ public class MarkovChain<K, V> {
       this.isEnd = true;
     }
 
-    Node add(List<V> chain) {
+    Node add(List<V> chain, Double weight) {
       Node node = this;
       for (V link : chain) {
         Node newNode = new Node(link);
-        node.children.add(newNode);
+        node.children.add(weight, newNode);
         node = node.children.findFirst(n -> n.matches(newNode)).orElse(null);
       }
       return node;
     }
 
-    Node isEnd() {
+    Node isEnd(Double weight) {
       Node endNode = new Node();
-      children.add(endNode);
+      children.add(weight, endNode);
       return children.findFirst(n -> n.matches(null)).orElse(null);
     }
 

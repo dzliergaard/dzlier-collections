@@ -3,7 +3,6 @@ package com.dzlier.markov;
 import com.dzlier.markov.MarkovChain.Composer;
 import java.util.List;
 import lombok.Getter;
-import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**
  * A top-level class that contains key and value classes for a {@link MarkovChain} to break down
@@ -21,11 +20,14 @@ class Markov {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null) return false;
-      if (!(o instanceof Chain)) return false;
-      EqualsBuilder eb = new EqualsBuilder();
-      eb.append(this.links, ((Chain)o).links);
-      return eb.isEquals();
+      if (o == null) {
+        return false;
+      }
+      if (!(o instanceof Chain)) {
+        return false;
+      }
+      Chain that = (Chain) o;
+      return this.links.equals(that.links);
     }
   }
 
